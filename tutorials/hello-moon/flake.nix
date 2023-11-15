@@ -27,13 +27,13 @@
         custom Cell Blocks (i.e. "typed outputs")
         */
         cellBlocks = [
-          (blockTypes.devshells "devshells")
+          (blockTypes.devshells "shells")
           (blockTypes.nixago "nixago")
         ];
 
         /*
         This debug facility helps you to explore what attributes are available
-        for a given input untill you get more familiar with `std`.
+        for a given input until you get more familiar with `std`.
         */
         debug = ["inputs" "std"];
       }
@@ -46,7 +46,7 @@
       # Soil ...
       # 1) layer for compat with the nix CLI
       {
-        devShells = harvest inputs.self ["_automation" "devshells"];
+        devShells = harvest inputs.self ["local" "shells"];
       }
       # 2) there can be various layers; `growOn` is a variadic function
       {};
