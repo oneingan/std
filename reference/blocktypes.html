@@ -199,7 +199,7 @@ let
 in
   name: {
     inherit name;
-    type = &quot;arion&quot;;
+    type = "arion";
     actions = {
       currentSystem,
       fragment,
@@ -208,14 +208,14 @@ in
       inputs,
     }: let
       pkgs = inputs.nixpkgs.${currentSystem};
-      cmd = &quot;arion --prebuilt-file ${target.config.out.dockerComposeYaml}&quot;;
+      cmd = "arion --prebuilt-file ${target.config.out.dockerComposeYaml}";
     in [
-      (mkCommand currentSystem &quot;up&quot; &quot;arion up&quot; [pkgs.arion] ''${cmd} up &quot;$@&quot; '' {})
-      (mkCommand currentSystem &quot;ps&quot; &quot;exec this arion task to ps&quot; [pkgs.arion] ''${cmd} ps &quot;$@&quot; '' {})
-      (mkCommand currentSystem &quot;stop&quot; &quot;arion stop&quot; [pkgs.arion] ''${cmd} stop &quot;$@&quot; '' {})
-      (mkCommand currentSystem &quot;rm&quot; &quot;arion rm&quot; [pkgs.arion] ''${cmd} rm &quot;$@&quot; '' {})
-      (mkCommand currentSystem &quot;config&quot; &quot;check the docker-compose yaml file&quot; [pkgs.arion] ''${cmd} config &quot;$@&quot; '' {})
-      (mkCommand currentSystem &quot;arion&quot; &quot;pass any command to arion&quot; [pkgs.arion] ''${cmd} &quot;$@&quot; '' {})
+      (mkCommand currentSystem "up" "arion up" [pkgs.arion] ''${cmd} up "$@" '' {})
+      (mkCommand currentSystem "ps" "exec this arion task to ps" [pkgs.arion] ''${cmd} ps "$@" '' {})
+      (mkCommand currentSystem "stop" "arion stop" [pkgs.arion] ''${cmd} stop "$@" '' {})
+      (mkCommand currentSystem "rm" "arion rm" [pkgs.arion] ''${cmd} rm "$@" '' {})
+      (mkCommand currentSystem "config" "check the docker-compose yaml file" [pkgs.arion] ''${cmd} config "$@" '' {})
+      (mkCommand currentSystem "arion" "pass any command to arion" [pkgs.arion] ''${cmd} "$@" '' {})
     ];
   }
 </code></pre>
@@ -235,7 +235,7 @@ in
   name: {
     __functor = addSelectorFunctor;
     inherit name;
-    type = &quot;runnables&quot;;
+    type = "runnables";
     actions = {
       currentSystem,
       fragment,
@@ -275,7 +275,7 @@ in
   name: {
     __functor = addSelectorFunctor;
     inherit name;
-    type = &quot;installables&quot;;
+    type = "installables";
     actions = {
       currentSystem,
       fragment,
@@ -287,36 +287,36 @@ in
     in [
       (actions.build currentSystem target)
       # profile commands require a flake ref
-      (mkCommand currentSystem &quot;install&quot; &quot;install this target&quot; [] ''
+      (mkCommand currentSystem "install" "install this target" [] ''
         # ${target}
         set -x
-        nix profile install &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix profile install "$PRJ_ROOT#"${escapedFragment}
       '' {})
-      (mkCommand currentSystem &quot;upgrade&quot; &quot;upgrade this target&quot; [] ''
+      (mkCommand currentSystem "upgrade" "upgrade this target" [] ''
         # ${target}
         set -x
-        nix profile upgrade &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix profile upgrade "$PRJ_ROOT#"${escapedFragment}
       '' {})
-      (mkCommand currentSystem &quot;remove&quot; &quot;remove this target&quot; [] ''
+      (mkCommand currentSystem "remove" "remove this target" [] ''
         # ${target}
         set -x
-        nix profile remove &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix profile remove "$PRJ_ROOT#"${escapedFragment}
       '' {})
       # TODO: use target. `nix bundle` requires a flake ref, but we may be able to use nix-bundle instead as a workaround
-      (mkCommand currentSystem &quot;bundle&quot; &quot;bundle this target&quot; [] ''
+      (mkCommand currentSystem "bundle" "bundle this target" [] ''
         # ${target}
         set -x
-        nix bundle --bundler github:Ninlives/relocatable.nix --refresh &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix bundle --bundler github:Ninlives/relocatable.nix --refresh "$PRJ_ROOT#"${escapedFragment}
       '' {})
-      (mkCommand currentSystem &quot;bundleImage&quot; &quot;bundle this target to image&quot; [] ''
+      (mkCommand currentSystem "bundleImage" "bundle this target to image" [] ''
         # ${target}
         set -x
-        nix bundle --bundler github:NixOS/bundlers#toDockerImage --refresh &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix bundle --bundler github:NixOS/bundlers#toDockerImage --refresh "$PRJ_ROOT#"${escapedFragment}
       '' {})
-      (mkCommand currentSystem &quot;bundleAppImage&quot; &quot;bundle this target to AppImage&quot; [] ''
+      (mkCommand currentSystem "bundleAppImage" "bundle this target to AppImage" [] ''
         # ${target}
         set -x
-        nix bundle --bundler github:ralismark/nix-appimage --refresh &quot;$PRJ_ROOT#&quot;${escapedFragment}
+        nix bundle --bundler github:ralismark/nix-appimage --refresh "$PRJ_ROOT#"${escapedFragment}
       '' {})
     ];
   }
@@ -332,7 +332,7 @@ slow them down.
 */
 name: {
   inherit name;
-  type = &quot;pkgs&quot;;
+  type = "pkgs";
   cli = false; # its special power
 }
 </code></pre>
@@ -356,7 +356,7 @@ in
   name: {
     __functor = addSelectorFunctor;
     inherit name;
-    type = &quot;devshells&quot;;
+    type = "devshells";
     actions = {
       currentSystem,
       fragment,
@@ -367,24 +367,24 @@ in
       developDrv = devshellDrv target;
     in [
       (actions.build currentSystem target)
-      (mkCommand currentSystem &quot;enter&quot; &quot;enter this devshell&quot; [] ''
-        profile_path=&quot;$PRJ_DATA_HOME/${fragmentRelPath}&quot;
-        mkdir -p &quot;$profile_path&quot;
+      (mkCommand currentSystem "enter" "enter this devshell" [] ''
+        profile_path="$PRJ_DATA_HOME/${fragmentRelPath}"
+        mkdir -p "$profile_path"
         # ${developDrv}
         nix_args=(
-          &quot;${unsafeDiscardStringContext developDrv.drvPath}&quot;
-          &quot;--no-update-lock-file&quot;
-          &quot;--no-write-lock-file&quot;
-          &quot;--no-warn-dirty&quot;
-          &quot;--accept-flake-config&quot;
-          &quot;--no-link&quot;
-          &quot;--build-poll-interval&quot; &quot;0&quot;
-          &quot;--builders-use-substitutes&quot;
+          "${unsafeDiscardStringContext developDrv.drvPath}"
+          "--no-update-lock-file"
+          "--no-write-lock-file"
+          "--no-warn-dirty"
+          "--accept-flake-config"
+          "--no-link"
+          "--build-poll-interval" "0"
+          "--builders-use-substitutes"
         )
-        nix build &quot;''${nix_args[@]}&quot; --profile &quot;$profile_path/shell-profile&quot;
-        _SHELL=&quot;$SHELL&quot;
-        eval &quot;$(nix print-dev-env ${developDrv})&quot;
-        SHELL=&quot;$_SHELL&quot;
+        nix build "''${nix_args[@]}" --profile "$profile_path/shell-profile"
+        _SHELL="$SHELL"
+        eval "$(nix print-dev-env ${developDrv})"
+        SHELL="$_SHELL"
         if ! [[ -v STD_DIRENV ]]; then
           if declare -F __devshell-motd &amp;&gt;/dev/null; then
             __devshell-motd
@@ -415,7 +415,7 @@ let
 in
   name: {
     inherit name;
-    type = &quot;nixago&quot;;
+    type = "nixago";
     actions = {
       currentSystem,
       fragment,
@@ -425,11 +425,11 @@ in
     }: let
       pkgs = inputs.nixpkgs.${currentSystem};
     in [
-      (mkCommand currentSystem &quot;populate&quot; &quot;populate this nixago file into the repo&quot; [] ''
+      (mkCommand currentSystem "populate" "populate this nixago file into the repo" [] ''
         ${target.install}/bin/nixago_shell_hook
       '' {})
-      (mkCommand currentSystem &quot;explore&quot; &quot;interactively explore the nixago file&quot; [pkgs.bat] ''
-        bat &quot;${target.configFile}&quot;
+      (mkCommand currentSystem "explore" "interactively explore the nixago file" [pkgs.bat] ''
+        bat "${target.configFile}"
       '' {})
     ];
   }
@@ -456,7 +456,7 @@ in
   name: {
     __functor = addSelectorFunctor;
     inherit name;
-    type = &quot;containers&quot;;
+    type = "containers";
     actions = {
       currentSystem,
       fragment,
@@ -469,7 +469,7 @@ in
       proviso = ./containers-proviso.sh;
 
       tags' =
-        builtins.toFile &quot;${target.name}-tags.json&quot; (builtins.concatStringsSep &quot;\n&quot; target.image.tags);
+        builtins.toFile "${target.name}-tags.json" (builtins.concatStringsSep "\n" target.image.tags);
       copyFn = ''
         copy() {
           local uri prev_tag
@@ -478,41 +478,41 @@ in
 
           for tag in $(&lt;${tags'}); do
             if ! [[ -v prev_tag ]]; then
-              skopeo --insecure-policy copy nix:${target} &quot;$uri:$tag&quot; &quot;$@&quot;
+              skopeo --insecure-policy copy nix:${target} "$uri:$tag" "$@"
             else
               # speedup: copy from the previous tag to avoid superflous network bandwidth
-              skopeo --insecure-policy copy &quot;$uri:$prev_tag&quot; &quot;$uri:$tag&quot; &quot;$@&quot;
+              skopeo --insecure-policy copy "$uri:$prev_tag" "$uri:$tag" "$@"
             fi
-            echo &quot;Done: $uri:$tag&quot;
+            echo "Done: $uri:$tag"
 
-            prev_tag=&quot;$tag&quot;
+            prev_tag="$tag"
           done
         }
       '';
     in [
       (actions.build currentSystem target)
-      (mkCommand currentSystem &quot;print-image&quot; &quot;print out the image.repo with all tags&quot; [] ''
+      (mkCommand currentSystem "print-image" "print out the image.repo with all tags" [] ''
         echo
         for tag in $(&lt;${tags'}); do
-          echo &quot;${target.image.repo}:$tag&quot;
+          echo "${target.image.repo}:$tag"
         done
       '' {})
-      (mkCommand currentSystem &quot;publish&quot; &quot;copy the image to its remote registry&quot; [skopeo-nix2container] ''
+      (mkCommand currentSystem "publish" "copy the image to its remote registry" [skopeo-nix2container] ''
           ${copyFn}
           copy docker://${target.image.repo}
         '' {
           meta.image = target.image.name;
           inherit proviso;
         })
-      (mkCommand currentSystem &quot;load&quot; &quot;load image to the local docker daemon&quot; [skopeo-nix2container] ''
+      (mkCommand currentSystem "load" "load image to the local docker daemon" [skopeo-nix2container] ''
         ${copyFn}
         if command -v podman &amp;&gt; /dev/null; then
-           echo &quot;Podman detected: copy to local podman&quot;
-           copy containers-storage:${target.image.repo} &quot;$@&quot;
+           echo "Podman detected: copy to local podman"
+           copy containers-storage:${target.image.repo} "$@"
         fi
         if command -v docker &amp;&gt; /dev/null; then
-           echo &quot;Docker detected: copy to local docker&quot;
-           copy docker-daemon:${target.image.repo} &quot;$@&quot;
+           echo "Docker detected: copy to local docker"
+           copy docker-daemon:${target.image.repo} "$@"
         fi
       '' {})
     ];
@@ -530,7 +530,7 @@ Use the Terra Blocktype for terraform configurations managed by terranix.
 Important! You need to specify the state repo on the blocktype, e.g.:
 
 [
-  (terra &quot;infra&quot; &quot;git@github.com:myorg/myrepo.git&quot;)
+  (terra "infra" "git@github.com:myorg/myrepo.git")
 ]
 
 Available actions:
@@ -548,7 +548,7 @@ in
   name: repo: {
     inherit name;
     __functor = self: selectors: self // selectors;
-    type = &quot;terra&quot;;
+    type = "terra";
     actions = {
       currentSystem,
       fragment,
@@ -560,17 +560,17 @@ in
       pkgs = inputs.nixpkgs.${currentSystem};
 
       repoFolder = with pkgs.lib;
-        concatStringsSep &quot;/&quot; ([&quot;./nix&quot;] ++ (init (splitString &quot;/&quot; fragmentRelPath)));
+        concatStringsSep "/" (["./nix"] ++ (init (splitString "/" fragmentRelPath)));
 
       git = {
         inherit repo;
-        # repo = &quot;git@github.com:myorg/myrepo.git&quot;;
-        ref = &quot;main&quot;;
-        state = fragmentRelPath + &quot;/state.json&quot;;
+        # repo = "git@github.com:myorg/myrepo.git";
+        ref = "main";
+        state = fragmentRelPath + "/state.json";
       };
 
       terraEval = import (terranix + /core/default.nix);
-      terraformConfiguration = builtins.toFile &quot;config.tf.json&quot; (builtins.toJSON
+      terraformConfiguration = builtins.toFile "config.tf.json" (builtins.toJSON
         (terraEval {
           inherit pkgs; # only effectively required for `pkgs.lib`
           terranix_config = {
@@ -584,38 +584,38 @@ in
       setup = ''
         export TF_IN_AUTOMATION=1
         # export TF_INPUT=0
-        export TF_DATA_DIR=&quot;$PRJ_DATA_HOME/${fragmentRelPath}&quot;
-        export TF_PLUGIN_CACHE_DIR=&quot;$PRJ_CACHE_HOME/tf-plugin-cache&quot;
-        mkdir -p &quot;$TF_DATA_DIR&quot;
-        mkdir -p &quot;$TF_PLUGIN_CACHE_DIR&quot;
-        dir=&quot;$PRJ_ROOT/${repoFolder}/.tf&quot;
-        mkdir -p &quot;$PRJ_ROOT/${repoFolder}/.tf&quot;
-        cat &lt;&lt; MESSAGE &gt; &quot;$PRJ_ROOT/${repoFolder}/.tf/readme.md&quot;
+        export TF_DATA_DIR="$PRJ_DATA_HOME/${fragmentRelPath}"
+        export TF_PLUGIN_CACHE_DIR="$PRJ_CACHE_HOME/tf-plugin-cache"
+        mkdir -p "$TF_DATA_DIR"
+        mkdir -p "$TF_PLUGIN_CACHE_DIR"
+        dir="$PRJ_ROOT/${repoFolder}/.tf"
+        mkdir -p "$PRJ_ROOT/${repoFolder}/.tf"
+        cat &lt;&lt; MESSAGE &gt; "$PRJ_ROOT/${repoFolder}/.tf/readme.md"
         This is a tf staging area.
         It is motivated by the terraform CLI requiring to be executed in a staging area.
         MESSAGE
 
-        if [[ -e &quot;$dir/config.tf.json&quot; ]]; then rm -f &quot;$dir/config.tf.json&quot;; fi
-        jq '.' ${terraformConfiguration} &gt; &quot;$dir/config.tf.json&quot;
+        if [[ -e "$dir/config.tf.json" ]]; then rm -f "$dir/config.tf.json"; fi
+        jq '.' ${terraformConfiguration} &gt; "$dir/config.tf.json"
       '';
 
       wrap = cmd: ''
         ${setup}
         terraform-backend-git git \
-           --dir &quot;$dir&quot; \
+           --dir "$dir" \
            --repository ${git.repo} \
            --ref ${git.ref} \
            --state ${git.state} \
-           terraform ${cmd} &quot;$@&quot;;
+           terraform ${cmd} "$@";
       '';
     in [
-      (mkCommand currentSystem &quot;init&quot; &quot;tf init&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;init&quot;) {})
-      (mkCommand currentSystem &quot;plan&quot; &quot;tf plan&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;plan&quot;) {})
-      (mkCommand currentSystem &quot;apply&quot; &quot;tf apply&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;apply&quot;) {})
-      (mkCommand currentSystem &quot;state&quot; &quot;tf state&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;state&quot;) {})
-      (mkCommand currentSystem &quot;refresh&quot; &quot;tf refresh&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;refresh&quot;) {})
-      (mkCommand currentSystem &quot;destroy&quot; &quot;tf destroy&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;destroy&quot;) {})
-      (mkCommand currentSystem &quot;terraform&quot; &quot;pass any command to terraform&quot; [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap &quot;&quot;) {})
+      (mkCommand currentSystem "init" "tf init" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "init") {})
+      (mkCommand currentSystem "plan" "tf plan" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "plan") {})
+      (mkCommand currentSystem "apply" "tf apply" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "apply") {})
+      (mkCommand currentSystem "state" "tf state" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "state") {})
+      (mkCommand currentSystem "refresh" "tf refresh" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "refresh") {})
+      (mkCommand currentSystem "destroy" "tf destroy" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "destroy") {})
+      (mkCommand currentSystem "terraform" "pass any command to terraform" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "") {})
     ];
   }
 </code></pre>
@@ -641,7 +641,7 @@ let
 in
   name: {
     inherit name;
-    type = &quot;data&quot;;
+    type = "data";
     actions = {
       currentSystem,
       fragment,
@@ -654,7 +654,7 @@ in
 
       # if target ? __std_data_wrapper, then we need to unpack from `.data`
       json = triv.writeTextFile {
-        name = &quot;data.json&quot;;
+        name = "data.json";
         text = toJSON (
           if target ? __std_data_wrapper
           then target.data
@@ -662,9 +662,9 @@ in
         );
       };
     in [
-      (mkCommand currentSystem &quot;write&quot; &quot;write to file&quot; [] &quot;echo ${json}&quot; {})
-      (mkCommand currentSystem &quot;explore&quot; &quot;interactively explore&quot; [pkgs.fx] (
-        concatStringsSep &quot;\t&quot; [&quot;fx&quot; json]
+      (mkCommand currentSystem "write" "write to file" [] "echo ${json}" {})
+      (mkCommand currentSystem "explore" "interactively explore" [pkgs.fx] (
+        concatStringsSep "\t" ["fx" json]
       ) {})
     ];
   }
@@ -682,7 +682,7 @@ Consequently, there are no actions available for functions.
 */
 name: {
   inherit name;
-  type = &quot;functions&quot;;
+  type = "functions";
 }
 </code></pre>
 <h2 id="anything"><a class="header" href="#anything">Anything</a></h2>
@@ -695,8 +695,543 @@ It doesn't have actions.
 */
 name: {
   inherit name;
-  type = &quot;anything&quot;;
+  type = "anything";
 }
+</code></pre>
+<h2 id="kubectl"><a class="header" href="#kubectl">Kubectl</a></h2>
+<p>Block type for rendering deployment manifests for the <a href="https://kubernetes.io">Kubernetes</a> Cluster scheduler.
+Each named attribtute-set under the block contains a set of deployment manifests.</p>
+<pre><code class="language-nix">{
+  trivial,
+  root,
+  super,
+  dmerge,
+}:
+/*
+Use the `kubectl` Blocktype for rendering deployment manifests
+for the Kubernetes Cluster scheduler. Each named attribtute-set under the
+block contains a set of deployment manifests.
+
+Available actions:
+  - render
+  - deploy
+  - explore
+*/
+let
+  inherit (root) mkCommand;
+  inherit (super) addSelectorFunctor askUserToProceedSnippet;
+in
+  name: {
+    __functor = addSelectorFunctor;
+    inherit name;
+    type = "kubectl";
+
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      inherit (inputs.nixpkgs) lib;
+      pkgs = inputs.nixpkgs.${currentSystem};
+      triv = trivial.${currentSystem};
+
+      manifest_path = fragmentRelPath;
+
+      checkedRev = inputs.std.std.errors.bailOnDirty ''
+        Will not render manifests from a dirty tree.
+        Otherwise we cannot keep good track of deployment history.''
+      inputs.self.rev;
+
+      usesKustomize = target ? kustomization || target ? Kustomization;
+
+      augment = let
+        amendIfExists = path: rhs: manifest:
+          if true == lib.hasAttrByPath path manifest
+          then amendAlways rhs manifest
+          else manifest;
+
+        amendAlways = rhs: manifest: dmerge manifest rhs;
+      in
+        target:
+          lib.mapAttrs (
+            key:
+              lib.flip lib.pipe [
+                # metadata
+                (
+                  manifest:
+                    if manifest ? metadata.labels &amp;&amp; manifest.metadata.labels == null
+                    then lib.recursiveUpdate manifest {metadata.labels = {};}
+                    else manifest
+                )
+                (
+                  amendIfExists ["metadata"]
+                  {
+                    metadata.labels."app.kubernetes.io/version" = checkedRev;
+                    metadata.labels."app.kubernetes.io/managed-by" = "std-kubectl";
+                  }
+                )
+                (
+                  if usesKustomize &amp;&amp; (key == "kustomization" || key == "Kustomization")
+                  # ensure a kustomization picks up the preprocessed resources
+                  then
+                    (manifest:
+                      manifest
+                      // {
+                        resources =
+                          map
+                          (n: "${n}.json")
+                          (builtins.attrNames (builtins.removeAttrs target ["meta" "Kustomization" "kustomization"]));
+                      })
+                  else lib.id
+                )
+              ]
+          ) (builtins.removeAttrs target ["meta"]);
+
+      generateManifests = target: let
+        writeManifest = name: manifest:
+          builtins.toFile name (builtins.unsafeDiscardStringContext (builtins.toJSON manifest));
+
+        renderManifests = lib.mapAttrsToList (name: manifest: ''
+          cp ${writeManifest name manifest} ${
+            if name == "kustomization" || name == "Kustomization"
+            then "Kustomization"
+            else "${name}.json"
+          }
+        '');
+      in
+        triv.runCommandLocal "generate-k8s-manifests" {} ''
+          mkdir -p $out
+          cd $out
+          ${lib.concatStrings (renderManifests (augment target))}
+        '';
+
+      build = ''
+        declare manifest_path="$PRJ_DATA_HOME/${manifest_path}"
+        build() {
+          echo "Buiding manifests..."
+          echo
+          rm -rf "$manifest_path"
+          mkdir -p "$(dirname "$manifest_path")"
+          ln -s "${generateManifests target}" "$manifest_path"
+          echo "Manifests built in: $manifest_path"
+        }
+      '';
+    in [
+      /*
+      The `render` action will take this Nix manifest descrition, convert it to JSON,
+      inject the git revision validate the manifest, after which it can be run or
+      planned with the kubectl cli or the `deploy` action.
+      */
+      (mkCommand currentSystem "render" "Build the JSON manifests" [] ''
+        ${build}
+        build
+      '' {})
+      (mkCommand currentSystem "diff" "Diff the manifests against the cluster" [pkgs.kubectl pkgs.icdiff] ''
+        ${build}
+        build
+
+        diff() {
+          kubectl diff ${
+          if usesKustomize
+          then "--kustomize"
+          else "--recursive --filename"
+        } "$manifest_path/";
+        }
+
+        # GitHub case
+        if [[ -v CI ]] &amp;&amp; [[ -v BRANCH ]] &amp;&amp; [[ -v OWNER_AND_REPO ]] &amp;&amp; command gh &gt; /dev/null ; then
+
+          set +e # diff exits 1 if diff existed
+          read -r -d "" DIFFSTREAM &lt;&lt;DIFF
+        ## Standard DiffPost
+
+        This PR would generate the following \`kubectl\` diff:
+
+        &lt;details&gt;&lt;summary&gt;Preview&lt;/summary&gt;
+
+        \`\`\`diff
+        $(diff)
+        \`\`\`
+
+        &lt;/details&gt;
+        DIFF
+          set -e # we're past the invocation of diff
+
+          if ! gh pr --repo "$OWNER_AND_REPO" comment "$BRANCH" --edit-last -b "$DIFFSTREAM"; then
+            echo "Make a first post ..."
+            gh pr --repo "$OWNER_AND_REPO" comment "$BRANCH" -b "$DIFFSTREAM"
+          fi
+        else
+          KUBECTL_EXTERNAL_DIFF="icdiff -N -r"
+          export KUBECTL_EXTERNAL_DIFF
+          diff
+        fi
+      '' {})
+      (mkCommand currentSystem "apply" "Apply the manifests to K8s" [pkgs.kubectl pkgs.icdiff] ''
+        ${build}
+        build
+
+        KUBECTL_EXTERNAL_DIFF="icdiff -N -r"
+        export KUBECTL_EXTERNAL_DIFF
+
+        diff() {
+          kubectl diff --server-side=true --field-manager="std-action-$(whoami)" ${
+          if usesKustomize
+          then "--kustomize"
+          else "--recursive --filename"
+        } "$manifest_path/";
+
+          return $?;
+        }
+
+        run() {
+          kubectl apply --server-side=true --field-manager="std-action-$(whoami)" ${
+          if usesKustomize
+          then "--kustomize"
+          else "--recursive --filename"
+        } "$manifest_path/";
+        }
+
+        diff
+        ret=$?
+        if [[ $ret == 0 ]] || [[ $ret == 1 ]]; then
+          ${askUserToProceedSnippet "apply" "run"}
+        fi
+      '' {})
+      (mkCommand currentSystem "explore" "Interactively explore the manifests" [pkgs.fx] ''
+        fx ${
+          builtins.toFile "explore-k8s-manifests.json"
+          (builtins.unsafeDiscardStringContext (builtins.toJSON (augment target)))
+        }
+      '' {})
+    ];
+  }
+</code></pre>
+<h2 id="files-todo-vs-data"><a class="header" href="#files-todo-vs-data">Files (todo: vs data)</a></h2>
+<pre><code class="language-nix">{root}:
+/*
+Use the Files Blocktype for any text data.
+
+Available actions:
+  - explore
+*/
+let
+  inherit (root) mkCommand;
+in
+  name: {
+    inherit name;
+    type = "files";
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      file = toString target;
+      pkgs = inputs.nixpkgs.${currentSystem};
+    in [
+      (mkCommand currentSystem "explore" "interactively explore with bat" [pkgs.bat] ''
+        bat ${file}
+      '' {})
+    ];
+  }
+</code></pre>
+<h2 id="microvms"><a class="header" href="#microvms">Microvms</a></h2>
+<p>Block type for managing <a href="https://astro.github.io/microvm.nix">microvm.nix</a> configuration for declaring lightweight NixOS virtual machines.</p>
+<pre><code class="language-nix">{root}:
+/*
+Use the Microvms Blocktype for Microvm.nix - https://github.com/astro/microvm.nix
+
+Available actions:
+  - run
+  - console
+  - microvm
+*/
+let
+  inherit (root) mkCommand;
+in
+  name: {
+    inherit name;
+    type = "microvms";
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: [
+      (mkCommand currentSystem "run" "run the microvm" [] ''
+        ${target.config.microvm.runner.${target.config.microvm.hypervisor}}/bin/microvm-run
+      '' {})
+      (mkCommand currentSystem "console" "enter the microvm console" [] ''
+        ${target.config.microvm.runner.${target.config.microvm.hypervisor}}/bin/microvm-console
+      '' {})
+      (mkCommand currentSystem "microvm" "pass any command to microvm" [] ''
+        ${target.config.microvm.runner.${target.config.microvm.hypervisor}}/bin/microvm-"$@"
+      '' {})
+    ];
+  }
+</code></pre>
+<h2 id="namaka"><a class="header" href="#namaka">Namaka</a></h2>
+<p>Block type for declaring <a href="https://github.com/nix-community/namaka">Namaka</a> snapshot tests.</p>
+<pre><code class="language-nix">{
+  root,
+  super,
+}: let
+  inherit (root) mkCommand;
+  inherit (super) addSelectorFunctor;
+in
+  name: {
+    __functor = addSelectorFunctor;
+    inherit name;
+    type = "namaka";
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      pkg = inputs.namaka.packages.${currentSystem}.default;
+      subdir = target.snap-dir or "";
+    in [
+      (mkCommand currentSystem "eval" "use transparently with namaka cli" [] ''
+        nix eval '.#${fragment}'
+      '' {})
+      (mkCommand currentSystem "check" "run namaka tests against snapshots" [pkg] ''
+        namaka ${subdir} check -c nix eval '.#${fragment}'
+      '' {})
+      (mkCommand currentSystem "review" "review pending namaka checks" [pkg] ''
+        namaka ${subdir} review -c nix eval '.#${fragment}'
+      '' {})
+      (mkCommand currentSystem "clean" "clean up pending namaka checks" [pkg] ''
+        namaka ${subdir} clean -c nix eval '.#${fragment}'
+      '' {})
+    ];
+  }
+</code></pre>
+<h2 id="nixostests"><a class="header" href="#nixostests">Nixostests</a></h2>
+<p>Block type for declaring VM-based tests for NixOS.</p>
+<pre><code class="language-nix">{
+  root,
+  super,
+}:
+/*
+Use the NixosTests Blocktype in order to instrucement nixos
+vm-based test inside your reporisory.
+
+Available actions:
+  - run
+  - run-vm
+  - audit-script
+  - run-vm-+
+*/
+let
+  inherit (root) mkCommand actions;
+  inherit (super) addSelectorFunctor;
+in
+  name: {
+    __functor = addSelectorFunctor;
+    inherit name;
+    type = "nixostests";
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      pkgs = inputs.nixpkgs.${currentSystem};
+      inherit (pkgs) lib;
+      inherit (pkgs.stdenv) isLinux;
+    in
+      [
+        (mkCommand currentSystem "run" "run tests in headless vm" [] ''
+          # ${target.driver}
+          ${target.driver}/bin/nixos-test-driver
+        '' {})
+        (mkCommand currentSystem "audit-script" "audit the test script" [pkgs.bat] ''
+          # ${target.driver}
+          bat --language py ${target.driver}/test-script
+        '' {})
+        (mkCommand currentSystem "run-vm" "run tests interactively in vm" [] ''
+          # ${target.driverInteractive}
+          ${target.driverInteractive}/bin/nixos-test-driver
+        '' {})
+        (mkCommand currentSystem "run-vm+" "run tests with state from last run" [] ''
+          # ${target.driverInteractive}
+          ${target.driverInteractive}/bin/nixos-test-driver --keep-vm-state
+        '' {})
+      ]
+      ++ lib.optionals isLinux [
+        (mkCommand currentSystem "iptables+" "setup nat redirect 80-&gt;8080 &amp; 443-&gt;4433" [pkgs.iptables] ''
+          sudo iptables \
+            --table nat \
+            --insert OUTPUT \
+            --proto tcp \
+            --destination 127.0.0.1 \
+            --dport 443 \
+            --jump REDIRECT \
+            --to-ports 4433
+          sudo iptables \
+            --table nat \
+            --insert OUTPUT \
+            --proto tcp \
+            --destination 127.0.0.1 \
+            --dport 80 \
+            --jump REDIRECT \
+            --to-ports 8080
+        '' {})
+        (mkCommand currentSystem "iptables-" "remove nat redirect 80-&gt;8080 &amp; 443-&gt;4433" [pkgs.iptables] ''
+          sudo iptables \
+            --table nat \
+            --delete OUTPUT -d 127.0.0.1/32 -p tcp -m tcp --dport 443 -j REDIRECT --to-ports 4433
+          sudo iptables \
+            --table nat \
+            --delete OUTPUT -d 127.0.0.1/32 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
+        '' {})
+      ];
+  }
+</code></pre>
+<h2 id="nomad"><a class="header" href="#nomad">Nomad</a></h2>
+<p>Block type for rendering job descriptions for the <a href="https://www.nomadproject.io/">Nomad</a> Cluster scheduler.</p>
+<pre><code class="language-nix">{
+  nixpkgs,
+  root,
+  super,
+}:
+/*
+Use the `nomad` Block Type for rendering job descriptions
+for the Nomad Cluster scheduler. Each named attribtute-set under the
+block contains a valid Nomad job description, written in Nix.
+
+Available actions:
+  - render
+  - deploy
+  - explore
+*/
+let
+  inherit (root) mkCommand;
+  inherit (super) addSelectorFunctor askUserToProceedSnippet;
+in
+  name: {
+    __functor = addSelectorFunctor;
+    inherit name;
+    type = "nomadJobManifests";
+
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      inherit (nixpkgs) lib;
+      pkgs = inputs.nixpkgs.${currentSystem};
+
+      job_name = baseNameOf fragmentRelPath;
+      job_path = "${dirOf fragmentRelPath}/${job_name}.json";
+
+      jobWithGitRevision = target: let
+        checkedRev = inputs.std.std.errors.bailOnDirty ''
+          Will not render jobs from a dirty tree.
+          Otherwise we cannot keep good track of deployment history.''
+        inputs.self.rev;
+        job = builtins.mapAttrs (_: v: lib.recursiveUpdate v {meta.rev = checkedRev;}) target.job;
+      in
+        builtins.toFile "${job_name}.json" (builtins.unsafeDiscardStringContext (builtins.toJSON {inherit job;}));
+      render = ''
+        declare job_path="$PRJ_DATA_HOME/${job_path}"
+        render() {
+          echo "Rendering to $job_path..."
+          rm -rf "$job_path"
+          ln -s "${jobWithGitRevision target}" "$job_path"
+          if status=$(nomad validate "$job_path"); then
+            echo "$status for $job_path"
+          fi
+        }
+      '';
+    in [
+      /*
+      The `render` action will take this Nix job descrition, convert it to JSON,
+      inject the git revision validate the manifest, after which it can be run or
+      planned with the Nomad cli or the `deploy` action.
+      */
+      (mkCommand currentSystem "render" "build the JSON job description" [pkgs.nomad] ''
+        ${render}
+        render
+      '' {})
+      (mkCommand currentSystem "deploy" "Deploy the job to Nomad" [pkgs.nomad pkgs.jq] ''
+        ${render}
+        render
+        if ! plan_results=$(nomad plan -force-color "$job_path"); then
+          echo "$plan_results"
+          run() { echo "$plan_results" | grep 'nomad job run -check-index'; }
+          ${askUserToProceedSnippet "deploy" "run"}
+        else
+          echo "Job hasn't changed since last deployment, nothing to deploy"
+        fi
+      '' {})
+      (mkCommand currentSystem "explore" "interactively explore the Job defintion" [pkgs.nomad pkgs.fx] ''
+        ${render}
+        render
+        fx "$job_path"
+      '' {})
+    ];
+  }
+</code></pre>
+<h2 id="nvfetcher"><a class="header" href="#nvfetcher">Nvfetcher</a></h2>
+<p>Block type for managing <a href="https://github.com/berberman/nvfetcher">nvfetcher</a> configuration for updating package definition sources.</p>
+<pre><code class="language-nix">{
+  root,
+  super,
+}:
+/*
+Use the nvfetcher Blocktype in order to generate package sources
+with nvfetcher. See its docs for more details.
+
+Available actions:
+  - fetch
+*/
+let
+  inherit (root) mkCommand actions;
+  inherit (super) addSelectorFunctor;
+in
+  name: {
+    __functor = addSelectorFunctor;
+    inherit name;
+    type = "nvfetcher";
+    actions = {
+      currentSystem,
+      fragment,
+      fragmentRelPath,
+      target,
+      inputs,
+    }: let
+      pkgs = inputs.nixpkgs.${currentSystem};
+      inherit (pkgs) lib;
+      inherit (pkgs.stdenv) isLinux;
+    in [
+      (mkCommand currentSystem "fetch" "update source" [pkgs.nvfetcher] ''
+         targetname="$(basename ${fragmentRelPath})"
+         blockpath="$(dirname ${fragmentRelPath})"
+         cellpath="$(dirname "$blockpath")"
+         tmpfile="$(mktemp)"
+         updates="$PRJ_ROOT/${fragmentRelPath}.md"
+         nvfetcher \
+           --config "$PRJ_ROOT/$cellpath/nvfetcher.toml" \
+           --build-dir "$PRJ_ROOT/$blockpath" \
+           --changelog "$tmpfile" \
+           --filter "^$targetname$"
+
+        sed -i -e "s|^|- \`$(date --iso-8601=m)\` |" "$tmpfile"
+        cat "$tmpfile" &gt;&gt; "$updates"
+      '' {})
+    ];
+  }
 </code></pre>
 
                     </main>
