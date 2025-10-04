@@ -19,6 +19,7 @@ in {
         treefmt = {
           run = "${lib.getExe nixpkgs.treefmt} --fail-on-change {staged_files}";
           skip = ["merge" "rebase"];
+          interactive = true;
         };
       };
     };
