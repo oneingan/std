@@ -18,6 +18,12 @@ Available actions:
   - state
   - refresh
   - destroy
+
+Optional terranix `_meta` passthru (requires terranix PR #151):
+  _meta.std = {
+    package, providers, modules,
+    terraformBackendGit = { enable, repo, ref, state; },
+  }
 */
 let
   inherit (root) mkCommand;
@@ -38,22 +44,40 @@ in
       pkgs = inputs.nixpkgs.${currentSystem};
 
       git = {
-        inherit repo;
-        ref = "main";
-        state = fragmentRelPath + "/state.json";
+        repo = backendGitCfg.repo or repo;
+        ref = backendGitCfg.ref or "main";
+        state = backendGitCfg.state or (fragmentRelPath + "/state.json");
       };
 
       terraEval = import (terranix + /core/default.nix);
-      terraformConfiguration = builtins.toFile "config.tf.json" (builtins.toJSON
-        (terraEval {
-          inherit pkgs; # only effectively required for `pkgs.lib`
-          terranix_config = {
-            _file = fragmentRelPath;
-            imports = [target];
-          };
-          strip_nulls = true;
-        })
-        .config);
+      terraResult = terraEval {
+        inherit pkgs; # only effectively required for `pkgs.lib`
+        terranix_config = {
+          _file = fragmentRelPath;
+          imports = [target];
+        };
+        strip_nulls = true;
+      };
+
+      stdMeta = (terraResult._meta or {}).std or {};
+
+      tfBase = stdMeta.package or pkgs.terraform;
+      providers = stdMeta.providers or [];
+      tfPkg =
+        if tfBase ? withPlugins && providers != []
+        then tfBase.withPlugins (_: providers)
+        else tfBase;
+      tfExe = pkgs.lib.getExe tfPkg;
+
+      modules = stdMeta.modules or {};
+      moduleLinksSnippet = pkgs.lib.concatStringsSep "\n" (
+        pkgs.lib.mapAttrsToList (n: src: "ln -sf \"${src}\" \"$dir/modules/${n}\"") modules
+      );
+
+      backendGitCfg = stdMeta.terraformBackendGit or {};
+      backendGitEnable = backendGitCfg.enable or true;
+
+      terraformConfiguration = builtins.toFile "config.tf.json" (builtins.toJSON terraResult.config);
 
       setup = ''
         export TF_VAR_fragment=${pkgs.lib.strings.escapeShellArg fragment}
@@ -72,37 +96,51 @@ in
 
         if [[ -e "$dir/config.tf.json" ]]; then rm -f "$dir/config.tf.json"; fi
         jq '.' ${terraformConfiguration} > "$dir/config.tf.json"
+
+        rm -rf "$dir/modules"
+        ${pkgs.lib.optionalString (modules != {}) ''
+          mkdir -p "$dir/modules"
+          ${moduleLinksSnippet}
+        ''}
       '';
       wrap = cmd: ''
         ${setup}
 
         # Run the command and capture output
-        terraform-backend-git git \
-           --dir "$dir" \
-           --repository ${git.repo} \
-           --ref ${git.ref} \
-           --state ${git.state} \
-           terraform ${cmd} "$@" \
-           ${pkgs.lib.optionalString (cmd == "plan") ''
-             -lock=false -no-color | tee "$PRJ_CACHE_HOME/tf.console.txt"
-           ''}
+        if ${pkgs.lib.boolToString backendGitEnable}; then
+          terraform-backend-git git \
+             --dir "$dir" \
+             --repository ${git.repo} \
+             --ref ${git.ref} \
+             --state ${git.state} \
+             terraform --tf ${tfExe} ${cmd} "$@" \
+             ${pkgs.lib.optionalString (cmd == "plan") ''
+          -lock=false -no-color | tee "$PRJ_CACHE_HOME/tf.console.txt"
+        ''}
+        else
+          ${tfExe} -chdir="$dir" ${cmd} "$@" \
+            ${pkgs.lib.optionalString (cmd == "plan") ''
+          -lock=false -no-color | tee "$PRJ_CACHE_HOME/tf.console.txt"
+        ''}
+        fi
 
         # Pass output to the snippet
         ${pkgs.lib.optionalString (cmd == "plan") ''
           output=$(cat "$PRJ_CACHE_HOME/tf.console.txt")
           summary_plan=$(tac "$PRJ_CACHE_HOME/tf.console.txt" | grep -m 1 -E '^(Error:|Plan:|Apply complete!|No changes.|Success)' | tac || echo "View output.")
-          summary="<code>std ${fragmentRelPath}:${cmd}</code>: $summary_plan" 
+          summary="<code>std ${fragmentRelPath}:${cmd}</code>: $summary_plan"
           ${postDiffToGitHubSnippet "${fragmentRelPath}:${cmd}" "$output" "$summary"}
         ''}
       '';
-      
+
+      deps = [pkgs.jq] ++ [tfPkg] ++ [pkgs.terraform-backend-git];
     in [
-      (mkCommand currentSystem "init" "tf init" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "init") {})
-      (mkCommand currentSystem "plan" "tf plan" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "plan") {})
-      (mkCommand currentSystem "apply" "tf apply" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "apply") {})
-      (mkCommand currentSystem "state" "tf state" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "state") {})
-      (mkCommand currentSystem "refresh" "tf refresh" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "refresh") {})
-      (mkCommand currentSystem "destroy" "tf destroy" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "destroy") {})
-      (mkCommand currentSystem "terraform" "pass any command to terraform" [pkgs.jq pkgs.terraform pkgs.terraform-backend-git] (wrap "") {})
+      (mkCommand currentSystem "init" "tf init" deps (wrap "init") {})
+      (mkCommand currentSystem "plan" "tf plan" deps (wrap "plan") {})
+      (mkCommand currentSystem "apply" "tf apply" deps (wrap "apply") {})
+      (mkCommand currentSystem "state" "tf state" deps (wrap "state") {})
+      (mkCommand currentSystem "refresh" "tf refresh" deps (wrap "refresh") {})
+      (mkCommand currentSystem "destroy" "tf destroy" deps (wrap "destroy") {})
+      (mkCommand currentSystem "terraform" "pass any command to terraform" deps (wrap "") {})
     ];
   }
